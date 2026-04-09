@@ -38,7 +38,7 @@ class PerceptronModel(Module):
 
     def train(self, dataset):
         with no_grad():
-            dataloader = DataLoader(dataset, batch_size=120, shuffle=True)
+            dataloader = DataLoader(dataset, batch_size=1, shuffle=True)
             converged = False
             while not converged:
                 converged = True
