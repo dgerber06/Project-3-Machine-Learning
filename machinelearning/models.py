@@ -222,6 +222,18 @@ class LanguageIDModel(Module):
         super(LanguageIDModel, self).__init__()
         "*** YOUR CODE HERE ***"
 
+        #hyperparameters
+        self.hidden_size = 256
+        self.learning_rate = 0.005
+
+        #layers
+        #transforms the character input into the hidden dimension
+        self.w_x = Linear(self.num_chars, self.hidden_size)
+        #transform prev. hidden state into next
+        self.w_h = Linear(self.hidden_size, self.hidden_size)
+        #Map last hidden state to language score
+        self.output_layer = Linear(self.hidden_size, len(self.languages))
+
 
     def run(self, xs):
         """
@@ -254,6 +266,15 @@ class LanguageIDModel(Module):
         """
         "*** YOUR CODE HERE ***"
 
+        #process first character to initialize hidden state
+        h = relu(self.w_x(xs[0]))
+
+        #iterate through remaining characters
+        for i in range(1, len(xs)):
+            h = relu(self.w_x(xs[i]) + self.w_h(h))
+        
+        return self.output_layer(h)
+
     
     def get_loss(self, xs, y):
         """
@@ -270,6 +291,8 @@ class LanguageIDModel(Module):
         Returns: a loss node
         """
         "*** YOUR CODE HERE ***"
+        logits = self.run(xs)
+        return cross_entropy(logits, y)
         
 
     def train(self, dataset):
@@ -287,6 +310,23 @@ class LanguageIDModel(Module):
         For more information, look at the pytorch documentation of torch.movedim()
         """
         "*** YOUR CODE HERE ***"
+        optimizer = optim.Adam(self.parameters(), lr = self.learning_rate)
+
+        dataloader = DataLoader(dataset, batch_size=64, shuffle=True)
+
+        for epoch in range(15):
+            for sample in dataloader:
+                x_batch = sample['x']
+                y_batch = sample['label']
+
+                x_batch = movedim(x_batch, 0, 1)
+
+                xs = [x_batch[i] for i in range(x_batch.shape[0])]
+
+                optimizer.zero_grad()
+                loss = self.get_loss(xs, y_batch)
+                loss.backward()
+                optimizer.step()
 
         
 
