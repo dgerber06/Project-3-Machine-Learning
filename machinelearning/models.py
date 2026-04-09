@@ -59,9 +59,15 @@ class RegressionModel(Module):
     to approximate sin(x) on the interval [-2pi, 2pi] to reasonable precision.
     """
     def __init__(self):
-        # Initialize your model parameters here
-        "*** YOUR CODE HERE ***"
         super().__init__()
+        # Initialize your model parameters here
+        self.net = torch.nn.Sequential(
+            Linear (1,64),
+            torch.nn.ReLU(),
+            Linear(64,64),
+            torch.nn.ReLU(),
+            Linear(64,1)
+        )
 
 
 
@@ -74,7 +80,7 @@ class RegressionModel(Module):
         Returns:
             A node with shape (batch_size x 1) containing predicted y-values
         """
-        "*** YOUR CODE HERE ***"
+        return self.net(x)
 
     
     def get_loss(self, x, y):
@@ -87,7 +93,8 @@ class RegressionModel(Module):
                 to be used for training
         Returns: a tensor of size 1 containing the loss
         """
-        "*** YOUR CODE HERE ***"
+        preds = self.forward(x)
+        return mse_loss(preds, y)
  
         
 
@@ -105,7 +112,17 @@ class RegressionModel(Module):
             dataset: a PyTorch dataset object containing data to be trained on
             
         """
-        "*** YOUR CODE HERE ***"
+        loader = DataLoader(dataset, batch_size=32, shuffle=True)
+        optimizer = optim.Adam(self.parameters(), lr=0.01)
+        e = 200
+        for _ in range(e):
+            for batch in loader:
+                x = batch['x']
+                y = batch['label']
+                optimizer.zero_grad()
+                loss = self.get_loss(x, y)
+                loss.backward()
+                optimizer.step()
 
             
 
