@@ -38,7 +38,7 @@ class PerceptronModel(Module):
 
     def train(self, dataset):
         with no_grad():
-            dataloader = DataLoader(dataset, batch_size=1, shuffle=True)
+            dataloader = DataLoader(dataset, batch_size=120, shuffle=True)
             converged = False
             while not converged:
                 converged = True
@@ -132,12 +132,13 @@ class DigitClassificationModel(Module):
     def __init__(self):
         # Initialize your model parameters here
         super().__init__()
-        input_size = 28 * 28
-        output_size = 10
+        self.input_size = 28 * 28
+        self.output_size = 10 
         "*** YOUR CODE HERE ***"
-
-
-
+        self.batch_size = 100
+        self.input_layer = Linear(self.input_size, 256)
+        self.hidden_layer = Linear(256, 128)
+        self.output_layer = Linear(128, self.output_size)
 
     def run(self, x):
         """
@@ -154,8 +155,12 @@ class DigitClassificationModel(Module):
                 (also called logits)
         """
         """ YOUR CODE HERE """
+        h1 = relu(self.input_layer(x))
+        h2 = relu(self.hidden_layer(h1))
+        pred_y = self.output_layer(h2)
+        return pred_y
 
- 
+        
 
     def get_loss(self, x, y):
         """
@@ -171,8 +176,10 @@ class DigitClassificationModel(Module):
         Returns: a loss tensor
         """
         """ YOUR CODE HERE """
-
-    
+        
+        pred_y = self.run(x)
+        error = cross_entropy(pred_y, y)
+        return error
         
 
     def train(self, dataset):
@@ -180,7 +187,22 @@ class DigitClassificationModel(Module):
         Trains the model.
         """
         """ YOUR CODE HERE """
+        optimizer = optim.Adam(self.parameters(), lr = 0.0003)
+        while dataset.get_validation_accuracy() < 0.975: 
+            print(dataset.get_validation_accuracy())
+            data = DataLoader(dataset, batch_size = self.batch_size)
+            for batch in data:
+                optimizer.zero_grad()
+                loss = self.get_loss(batch['x'], batch['label'])
+                loss.backward()
+                optimizer.step()
 
+            
+                    
+
+
+
+        
 
 
 class LanguageIDModel(Module):
