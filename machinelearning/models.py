@@ -362,9 +362,19 @@ def Convolve(input: tensor, weight: tensor):
     """
     input_tensor_dimensions = input.shape
     weight_dimensions = weight.shape
-    Output_Tensor = tensor(())
+    
     "*** YOUR CODE HERE ***"
+    h_in, w_in = input_tensor_dimensions
+    h_w, w_w = weight_dimensions
+    h_out = h_in - h_w + 1
+    w_out = w_in - w_w + 1
 
+    Output_Tensor = ones(h_out, w_out) * 0
+
+    for i in range(h_out):
+        for j in range(w_out):
+            patch = input[i : i + h_w, j : j + w_w]
+            Output_Tensor[i,j] = tensordot(patch, weight, dims=2)
     
     "*** End Code ***"
     return Output_Tensor
@@ -392,6 +402,8 @@ class DigitConvolutionalModel(Module):
         self.convolution_weights = Parameter(ones((3, 3)))
         """ YOUR CODE HERE """
 
+        self.fc = Linear(676, output_size)
+
 
 
 
@@ -407,6 +419,7 @@ class DigitConvolutionalModel(Module):
         x = stack(list(map(lambda sample: Convolve(sample, self.convolution_weights), x)))
         x = x.flatten(start_dim=1)
         """ YOUR CODE HERE """
+        return self.fc(x)
 
 
     def get_loss(self, x, y):
@@ -423,6 +436,8 @@ class DigitConvolutionalModel(Module):
         Returns: a loss tensor
         """
         """ YOUR CODE HERE """
+        logits = self.run(x)
+        return cross_entropy(logits, y)
 
      
         
@@ -432,6 +447,18 @@ class DigitConvolutionalModel(Module):
         Trains the model.
         """
         """ YOUR CODE HERE """
+        optimizer = optim.Adam(self.parameters(), lr=0.001)
+        dataloader = DataLoader(dataset, batch_size=32, shuffle=True)
+
+        for epoch in range(10):
+            for sample in dataloader:
+                x_batch = sample['x']
+                y_batch = sample['label']
+
+                optimizer.zero_grad()
+                loss = self.get_loss(x_batch, y_batch)
+                loss.backward()
+                optimizer.step()
 
 
 
