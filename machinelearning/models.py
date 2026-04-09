@@ -187,9 +187,8 @@ class DigitClassificationModel(Module):
         Trains the model.
         """
         """ YOUR CODE HERE """
-        optimizer = optim.Adam(self.parameters(), lr = 0.0003)
+        optimizer = optim.Adam(self.parameters(), lr = 0.00025)
         while dataset.get_validation_accuracy() < 0.975: 
-            print(dataset.get_validation_accuracy())
             data = DataLoader(dataset, batch_size = self.batch_size)
             for batch in data:
                 optimizer.zero_grad()
