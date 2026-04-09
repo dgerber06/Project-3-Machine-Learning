@@ -415,4 +415,19 @@ class Attention(Module):
 
         """YOUR CODE HERE"""
 
-     
+        K = self.k_layer(input)
+        Q = self.q_layer(input)
+        V = self.v_layer(input)
+
+        Q_trans = movedim(Q,1,2)
+
+        h1 = matmul(K, Q_trans)
+        d = self.layer_size ** 0.5
+
+        h2 = torch.div(h1, d)
+        M = h2.masked_fill(self.mask[:,:,:T,:T] == 0, float('-inf'))[0]
+
+        h3 = softmax(M, dim=-1)
+
+        y_pred = matmul(h3, V)
+        return y_pred
